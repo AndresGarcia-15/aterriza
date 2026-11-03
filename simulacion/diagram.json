@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "author": "Proyecto Biomecanica UTB",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "chip-gy85",
+      "id": "imuT",
+      "top": -160,
+      "left": -250,
+      "attrs": {
+        "segment": "0",
+        "scenario": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "imuT_lbl",
+      "top": -190,
+      "left": -250,
+      "attrs": {
+        "text": "IMU Muslo"
+      }
+    },
+    {
+      "type": "chip-gy85",
+      "id": "imuP",
+      "top": 20,
+      "left": -250,
+      "attrs": {
+        "segment": "1",
+        "scenario": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "imuP_lbl",
+      "top": -10,
+      "left": -250,
+      "attrs": {
+        "text": "IMU Pierna"
+      }
+    },
+    {
+      "type": "chip-gy85",
+      "id": "imuL",
+      "top": 200,
+      "left": -250,
+      "attrs": {
+        "segment": "2",
+        "scenario": "0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "imuL_lbl",
+      "top": 170,
+      "left": -250,
+      "attrs": {
+        "text": "IMU Lumbar"
+      }
+    },
+    {
+      "type": "chip-fsr",
+      "id": "fsr",
+      "top": 40,
+      "left": 250,
+      "attrs": {
+        "scenario": "0",
+        "r_divider": "10000",
+        "transfer": "0.10"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "fsr_lbl",
+      "top": 10,
+      "left": 250,
+      "attrs": {
+        "text": "Plantillas FSR 402"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "imuT:SDA",
+      "esp:21",
+      "blue",
+      []
+    ],
+    [
+      "imuT:SCL",
+      "esp:22",
+      "gold",
+      []
+    ],
+    [
+      "imuT:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "imuT:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "imuP:SDA",
+      "esp:18",
+      "blue",
+      []
+    ],
+    [
+      "imuP:SCL",
+      "esp:19",
+      "gold",
+      []
+    ],
+    [
+      "imuP:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "imuP:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "imuL:SDA",
+      "esp:16",
+      "blue",
+      []
+    ],
+    [
+      "imuL:SCL",
+      "esp:17",
+      "gold",
+      []
+    ],
+    [
+      "imuL:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "imuL:GND",
+      "esp:GND.1",
+      "black",
+      []
+    ],
+    [
+      "fsr:P1H",
+      "esp:32",
+      "green",
+      []
+    ],
+    [
+      "fsr:P1F",
+      "esp:33",
+      "green",
+      []
+    ],
+    [
+      "fsr:P2H",
+      "esp:34",
+      "green",
+      []
+    ],
+    [
+      "fsr:P2F",
+      "esp:35",
+      "green",
+      []
+    ],
+    [
+      "fsr:VCC",
+      "esp:3V3",
+      "red",
+      []
+    ],
+    [
+      "fsr:GND",
+      "esp:GND.2",
+      "black",
+      []
+    ]
+  ],
+  "serialMonitor": {
+    "display": "terminal",
+    "newline": "none"
+  },
+  "dependencies": {}
+}

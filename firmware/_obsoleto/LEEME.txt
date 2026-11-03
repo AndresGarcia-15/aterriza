@@ -1,0 +1,2 @@
+Driver GY-85 de la v0.1 (reemplazado por ImuSensor.*, que detecta MPU6050 o GY-85).
+Se guarda solo como referencia: no se compila (está fuera de la carpeta del sketch).

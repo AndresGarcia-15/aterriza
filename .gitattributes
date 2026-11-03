@@ -1,0 +1,18 @@
+* text=auto eol=lf
+*.sh text eol=lf
+*.command text eol=lf
+*.glb binary
+*.wasm binary
+*.bin binary
+*.png binary
+*.jpg binary
+*.pdf binary
+# archivos de bloqueo: sin diffs ruidosos
+plataforma/frontend/package-lock.json linguist-generated=true -diff
+plataforma/backend/uv.lock linguist-generated=true -diff
+# resultados generados del gemelo digital
+simulacion/gemelo/resultados/** linguist-generated=true
+plataforma/backend/data/demo/** linguist-generated=true
+# datos y cabeceras de terceros: se guardan byte a byte
+*.csv -text
+simulacion/chips/src/wokwi-api.h -text

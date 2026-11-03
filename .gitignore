@@ -1,0 +1,43 @@
+# ── Sistema / editores ─────────────────────────────
+.DS_Store
+.vscode/
+.idea/
+*.swp
+.specstory/
+
+# ── Dependencias y compilados ──────────────────────
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+frontend/test-results/
+plataforma/frontend/test-results/
+plataforma/frontend/playwright-report/
+*.tsbuildinfo
+*.log
+
+# Firmware compilado para Wokwi (se regenera con simulacion/build_firmware.sh)
+simulacion/build/
+# Gemelo digital compilado (se regenera solo con simulacion/gemelo/build.sh)
+simulacion/gemelo/bin/
+
+# ── Datos locales: NUNCA al repositorio ────────────
+# Base de datos con atletas, sesiones y señales de cada salto
+*.db
+*.db-journal
+*.sqlite
+# Configuración local (PIN del modo profesional, divisor, etc.)
+plataforma/backend/data/config.json
+plataforma/backend/feedback/historial/
+# Ensayos grabados con participantes reales (datos personales y de salud)
+laboratorio/ensayos/*
+!laboratorio/ensayos/.gitkeep
+laboratorio/.cache/
+
+# ── Documentos de trabajo del curso (no se publican) ─
+/Documentacion_Maestra_*.pdf
+/PROMPT_MAESTRO_INTERFAZ.md
+/entrega/

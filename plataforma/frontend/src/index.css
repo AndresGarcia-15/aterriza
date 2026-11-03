@@ -1,0 +1,180 @@
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import 'tailwindcss';
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* ------------------------------------------------------------------
+   Tokens. Un solo acento (cian "referencia") + colores semánticos que
+   SOLO se usan para el estado: cumple / parcial / a corregir.
+   ------------------------------------------------------------------ */
+:root {
+  --bg: #f3f4f1;
+  --bg-2: #e9ebe6;
+  --surface: #ffffff;
+  --surface-2: #f7f8f5;
+  --line: #d9ddd5;
+  --line-2: #c6cbc2;
+  --ink: #0d1014;
+  --ink-2: #3a424c;
+  --muted: #5d6672;
+  --accent: #0089a8;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(0, 137, 168, 0.1);
+  --ok: #0f8a4c;
+  --ok-soft: rgba(15, 138, 76, 0.1);
+  --mid: #a86400;
+  --mid-soft: rgba(196, 122, 0, 0.12);
+  --bad: #c42a3c;
+  --bad-soft: rgba(196, 42, 60, 0.1);
+  --grid: #c3c8be;
+  --scene-bg: #e6e8e3;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0a0c0f;
+  --bg-2: #0e1115;
+  --surface: #121519;
+  --surface-2: #171b20;
+  --line: #22272e;
+  --line-2: #2e353e;
+  --ink: #eef1f4;
+  --ink-2: #c3cad3;
+  --muted: #8c96a3;
+  --accent: #3ee0ff;
+  --accent-ink: #001a20;
+  --accent-soft: rgba(62, 224, 255, 0.1);
+  --ok: #3ddc84;
+  --ok-soft: rgba(61, 220, 132, 0.12);
+  --mid: #ffb340;
+  --mid-soft: rgba(255, 179, 64, 0.12);
+  --bad: #ff5a6a;
+  --bad-soft: rgba(255, 90, 106, 0.12);
+  --grid: #2a3038;
+  --scene-bg: #0b0d10;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --font-sans: 'Archivo Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-mid: var(--mid);
+  --color-mid-soft: var(--mid-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variation-settings: 'wdth' 100;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Tipografía de display: Archivo expandida, para el índice y las metas. */
+.display {
+  font-variation-settings: 'wdth' 125;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.92;
+}
+.display-cond {
+  font-variation-settings: 'wdth' 70;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+/* Grano sutil para que las superficies no se vean planas. */
+.grain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.hairline {
+  background-image: linear-gradient(90deg, transparent, var(--line-2), transparent);
+  height: 1px;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.8); }
+}
+.pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  :root {
+    --bg: #fff;
+    --surface: #fff;
+  }
+  .no-print {
+    display: none !important;
+  }
+  body {
+    font-size: 12px;
+  }
+}
+
+/* Etiquetas del gemelo del banco (HTML sobre la escena 3D). */

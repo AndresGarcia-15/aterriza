@@ -1,0 +1,243 @@
+# =====================================================================
+#  Motor de retroalimentación del aterrizaje — reglas versionadas
+#  Única fuente de umbrales, pesos y mensajes (fuentes en docs/ciencia.md).
+#  - umbral_ok / umbral_parcial: los marcados "operativo" los definió el equipo
+#    para hacer medible un criterio cualitativo; se ajustan en Modo profesional.
+#  - Ángulos en grados RELATIVOS a la postura de pie (tara del firmware).
+#  - Índice de técnica 0-100 = Σ peso × (1 cumple · 0,5 parcial · 0 no cumple),
+#    renormalizado sobre los ítems medibles. NO es un índice de riesgo de lesión.
+# =====================================================================
+version: 3
+actualizado: "2026-10-23"
+
+categorias:            # índice mínimo → palabra (de mayor a menor)
+  - {min: 85, nombre: Excelente, estado: ok}
+  - {min: 70, nombre: Bien, estado: ok}
+  - {min: 55, nombre: Mejorable, estado: parcial}
+  - {min: 0,  nombre: A corregir, estado: no}
+
+confianza:
+  saturado_pct_baja: 20      # % del aterrizaje con algún FSR saturado → confianza baja
+  saturado_pct_media: 5
+  perdidas_baja: 5           # paquetes perdidos en la ventana del aterrizaje
+
+aviso: "Herramienta educativa de técnica; no es un diagnóstico médico."
+
+no_disponible:
+  - {nombre: "Ancho de la base de apoyo", motivo: "Las plantillas no miden la posición de los pies en el piso (LESS ítems 11-12)."}
+  - {nombre: "Rotación de los pies", motivo: "No hay sensores de orientación en los pies (LESS ítems 13-14)."}
+  - {nombre: "Valgo de la pierna izquierda", motivo: "Solo la pierna derecha lleva IMU; la izquierda se dibuja en espejo (estimada)."}
+  - {nombre: "Fuerza de reacción del suelo real", motivo: "Los FSR no están calibrados contra una plataforma de fuerza: se reporta carga relativa."}
+
+reglas:
+  - id: rodilla_contacto
+    item: 1
+    nombre: Rodillas al tocar el piso
+    variable: rodilla_contacto
+    tipo: mayor
+    umbral_ok: 30
+    umbral_parcial: 10          # operativo
+    unidad: "°"
+    peso: 14
+    prioridad: 1
+    grupo: rodillas
+    mensaje_corregir: "Flexiona más las rodillas antes de tocar el piso: {valor}°, meta más de {meta}°."
+    mensaje_bien: "Llegaste al piso con las rodillas dobladas ({valor}°)."
+    porque: >-
+      Tocar el piso con las rodillas ya flexionadas permite que los músculos absorban el
+      impacto desde el primer instante. En la escala LESS, menos de 30° de flexión de rodilla
+      en el contacto inicial cuenta como error. Cada 10° más de flexión máxima de rodilla se
+      asoció con menor riesgo de lesión del ligamento cruzado anterior (HR 0,55), aunque la
+      escala no predice lesiones individuales.
+    fuente: "Padua et al., 2009 (LESS ítem 1); Leppänen et al., 2017, AJSM 45(2):386-393"
+
+  - id: rodilla_desplazamiento
+    item: 4
+    nombre: Recorrido de las rodillas
+    variable: rodilla_desplazamiento
+    tipo: mayor
+    umbral_ok: 45
+    umbral_parcial: 30          # operativo
+    unidad: "°"
+    peso: 18
+    prioridad: 1
+    grupo: rodillas
+    mensaje_corregir: "Sigue flexionando las rodillas al caer: {valor}° de recorrido, meta más de {meta}°."
+    mensaje_bien: "Absorbiste el impacto flexionando las rodillas ({valor}°)."
+    porque: >-
+      Un aterrizaje "suave" sigue doblando las rodillas después del contacto: el cuerpo frena
+      en más tiempo y con menos fuerza. LESS considera adecuado un desplazamiento de flexión de
+      rodilla mayor de 45° tras el contacto.
+    fuente: "Padua et al., 2009 (LESS ítem 4); Leppänen et al., 2017"
+
+  - id: tronco_contacto
+    item: 3
+    nombre: Tronco al tocar el piso
+    variable: tronco_contacto
+    tipo: mayor
+    umbral_ok: 10               # operativo (≥ 10°, ajustable)
+    umbral_parcial: 3           # operativo
+    unidad: "°"
+    peso: 8
+    prioridad: 2
+    grupo: tronco
+    mensaje_corregir: "Inclina un poco el tronco hacia adelante al caer: {valor}°, meta {meta}°."
+    mensaje_bien: "Caíste con el tronco inclinado hacia adelante ({valor}°)."
+    porque: >-
+      Inclinar el tronco hacia adelante al aterrizar hace que la cadera y la rodilla se
+      flexionen más y reduce la fuerza de impacto y la activación del cuádriceps.
+    fuente: "Blackburn & Padua, 2008 (Clin Biomech); 2009 (J Athl Train); LESS ítem 3"
+
+  - id: tronco_desplazamiento
+    item: 6
+    nombre: Tronco después del contacto
+    variable: tronco_desplazamiento
+    tipo: mayor
+    umbral_ok: 10               # operativo ("aumenta tras el contacto")
+    umbral_parcial: 5           # operativo
+    unidad: "°"
+    peso: 6
+    prioridad: 2
+    grupo: tronco
+    mensaje_corregir: "Sigue inclinando el tronco al absorber: {valor}°, meta más de {meta}°."
+    mensaje_bien: "Acompañaste la caída inclinando el tronco ({valor}°)."
+    porque: >-
+      En un buen aterrizaje la flexión del tronco aumenta después del contacto (LESS ítem 6);
+      así la cadera comparte el trabajo de frenar con la rodilla.
+    fuente: "Padua et al., 2009 (LESS ítem 6); Blackburn & Padua, 2009"
+
+  - id: cadera
+    item: 5
+    nombre: Cadera flexionada
+    variable: cadera_contacto
+    variable_2: cadera_desplazamiento
+    tipo: doble                  # cumple si ambas ≥ umbral_ok; parcial si una
+    umbral_ok: 10               # operativo: flexionada (≥ 10°) y aumentando (≥ 10°)
+    umbral_parcial: 10
+    unidad: "°"
+    peso: 8
+    prioridad: 2
+    grupo: tronco
+    mensaje_corregir: "Lleva la cadera atrás, como para sentarte, al aterrizar."
+    mensaje_bien: "Flexionaste la cadera al caer ({valor}°)."
+    porque: >-
+      La cadera debe llegar flexionada al contacto y seguir flexionándose (LESS ítems 2 y 5).
+      Aquí se estima sumando la inclinación del tronco (IMU lumbar) y la del muslo (IMU del muslo).
+    fuente: "Padua et al., 2009 (LESS ítems 2 y 5)"
+
+  - id: apoyo
+    item: 7
+    nombre: Antepié y luego talón
+    variable: antepie_a_talon_ms
+    tipo: mayor
+    umbral_ok: 5                # operativo: antepié ≥ 5 ms antes que el talón
+    umbral_parcial: -5          # operativo: casi simultáneo = pie plano
+    unidad: " ms"
+    peso: 8
+    prioridad: 3
+    grupo: pies
+    mensaje_corregir: "Cae primero con la parte delantera del pie y luego apoya el talón."
+    mensaje_bien: "Tocaste primero con el antepié y luego con el talón."
+    porque: >-
+      Aterrizar de punta a talón alarga el frenado. En un estudio observacional pequeño, el
+      aterrizaje con antepié tuvo un pico de fuerza 40-49 % menor y una tasa de carga ~65 %
+      menor que con el talón. Es evidencia de apoyo, no una prueba única.
+    fuente: "Padua et al., 2009 (LESS ítem 7); Standing & Maulder, 2015, JSSM 14:723"
+
+  - id: simetria_contacto
+    item: 8
+    nombre: Ambos pies a la vez
+    variable: diferencia_contacto_ms
+    tipo: menor
+    umbral_ok: 30               # operativo (< 30 ms)
+    umbral_parcial: 60          # operativo
+    unidad: " ms"
+    peso: 5
+    prioridad: 3
+    grupo: simetria
+    mensaje_corregir: "Toca el piso con ambos pies a la vez: {valor} ms de diferencia."
+    mensaje_bien: "Ambos pies tocaron el piso al mismo tiempo."
+    porque: >-
+      LESS cuenta como error que un pie toque el piso antes que el otro. Caer con los dos pies
+      a la vez reparte el impacto entre ambas piernas.
+    fuente: "Padua et al., 2009 (LESS ítem 8)"
+
+  - id: simetria_carga
+    item: 8
+    nombre: Peso repartido
+    variable: lsi_carga_pct
+    tipo: mayor
+    umbral_ok: 90               # operativo (LSI ≥ 90 %, criterio de retorno al deporte)
+    umbral_parcial: 80          # operativo
+    unidad: " %"
+    peso: 10
+    prioridad: 1
+    grupo: simetria
+    mensaje_corregir: "Reparte el peso igual en ambos pies: simetría {valor} %, meta {meta} %."
+    mensaje_bien: "Repartiste el peso de forma pareja ({valor} %)."
+    porque: >-
+      Cargar mucho más una pierna concentra el impacto en ella. El índice de simetría entre
+      extremidades (LSI) de 90 % o más es el criterio habitual de retorno al deporte; aquí se
+      calcula con la carga de los primeros 300 ms.
+    fuente: "Criterio LSI de retorno al deporte (operativo, ≥ 90 %)"
+
+  - id: tronco_lateral
+    item: 9
+    nombre: Tronco recto de frente
+    variable: tronco_lateral_max
+    tipo: menor
+    umbral_ok: 5                # operativo ("tronco vertical")
+    umbral_parcial: 10          # operativo
+    unidad: "°"
+    peso: 5
+    prioridad: 2
+    grupo: tronco_lateral
+    mensaje_corregir: "Mantén el tronco derecho, sin ladearte: {valor}° de inclinación."
+    mensaje_bien: "Mantuviste el tronco derecho, sin ladearte."
+    porque: >-
+      Visto de frente, el tronco debe quedar vertical al aterrizar (LESS ítem 9). Ladearse
+      desplaza el peso hacia una pierna.
+    fuente: "Padua et al., 2009 (LESS ítem 9)"
+
+  - id: valgo
+    item: 10
+    nombre: Rodilla alineada (der.)
+    variable: valgo_der_max
+    tipo: menor
+    umbral_ok: 5                # operativo
+    umbral_parcial: 10          # operativo
+    unidad: "°"
+    peso: 8
+    prioridad: 1
+    grupo: valgo
+    mensaje_corregir: "Mantén la rodilla derecha alineada con el pie, sin irse hacia adentro."
+    mensaje_bien: "Tu rodilla derecha se mantuvo alineada con el pie."
+    porque: >-
+      Que la rodilla se vaya hacia adentro al caer (valgo dinámico) es un error en LESS
+      (ítems 10 y 15). Aquí se aproxima con la inclinación frontal de la pierna derecha:
+      es un indicador, no un diagnóstico.
+    fuente: "Padua et al., 2009 (LESS ítems 10 y 15)"
+
+  - id: rigidez
+    item: 16
+    nombre: Aterrizaje suave
+    variable: rigidez_puntaje
+    tipo: mayor
+    umbral_ok: 0.75             # suave
+    umbral_parcial: 0.4         # media; por debajo: rígida
+    unidad: ""
+    peso: 10
+    prioridad: 1
+    grupo: rodillas
+    mensaje_corregir: "Aterriza más suave: deja que rodillas y cadera frenen la caída."
+    mensaje_bien: "Tu aterrizaje fue suave."
+    porque: >-
+      La impresión global de LESS clasifica el aterrizaje en suave, medio o rígido según cuánto
+      se flexionan rodilla, cadera y tronco. Aquí combina el recorrido de rodilla (ítem 4) con la
+      carga relativa de impacto: cada 100 N más de pico de fuerza vertical se asoció con más
+      riesgo (HR 1,26).
+    fuente: "Padua et al., 2009 (LESS ítem 16); Leppänen et al., 2017"
+    # Componente de carga (ítem 11): pico de carga relativo a la carga de pie.
+    # Cortes operativos y provisionales hasta calibrar los FSR contra una plataforma.
+    carga_baja: 4.25
+    carga_media: 4.5

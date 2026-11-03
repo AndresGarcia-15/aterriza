@@ -1,0 +1,16 @@
+# Proyecto Wokwi — Sistema biomecánico del aterrizaje (100 % digital)
+# Abrir ESTA carpeta (simulacion/) en VS Code y ejecutar "Wokwi: Start Simulator".
+[wokwi]
+version = 1
+firmware = 'build/BiomecanicaESP32.ino.merged.bin'
+elf = 'build/BiomecanicaESP32.ino.elf'
+# Puerto serie por red para el logger:  --port rfc2217://localhost:4000
+rfc2217ServerPort = 4000
+
+[[chip]]
+name = 'gy85'
+binary = 'chips/dist/gy85.chip.wasm'
+
+[[chip]]
+name = 'fsr'
+binary = 'chips/dist/fsr.chip.wasm'
