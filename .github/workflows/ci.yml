@@ -7,8 +7,12 @@ on:
 
 jobs:
   backend:
-    name: Backend (pytest)
-    runs-on: ubuntu-latest
+    name: Backend · ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: plataforma/backend
@@ -19,8 +23,12 @@ jobs:
       - run: uv run pytest -q
 
   frontend:
-    name: Frontend (lint, tipos, pruebas, build)
-    runs-on: ubuntu-latest
+    name: Interfaz · ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: plataforma/frontend
@@ -36,9 +44,37 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  firmware:
-    name: Firmware (compila en el gemelo digital)
-    runs-on: ubuntu-latest
+  gemelo:
+    name: Firmware en el gemelo digital · ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - run: sh simulacion/gemelo/build.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python simulacion/gemelo/build.py
+      - name: El gemelo ejecuta el firmware (escenario controlado)
+        shell: bash
+        run: |
+          EXE=""; [ "$RUNNER_OS" = "Windows" ] && EXE=".exe"
+          simulacion/gemelo/bin/sim_100_ma3$EXE 0 1000 0.10 out.csv > metricas.json
+          grep -q rmse_rodilla metricas.json && head -c 300 metricas.json
+
+  scripts:
+    name: Scripts de inicio
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Los .ps1 de Windows no tienen errores de sintaxis
+        shell: pwsh
+        run: |
+          foreach ($f in "plataforma/iniciar.ps1", "laboratorio/iniciar.ps1") {
+            $err = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $f), [ref]$null, [ref]$err) | Out-Null
+            if ($err) { $err; exit 1 }
+            "$f OK"
+          }

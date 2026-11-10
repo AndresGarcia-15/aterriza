@@ -21,7 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import banco, db, engine, settings
-from .bridge import find_usb_port
+from .bridge import list_usb_ports
 from .db import Atleta, PruebaBanco, Salto, Sesion, select
 from .live import HUB
 from .reference import reference
@@ -200,10 +200,8 @@ def progreso(aid: int):
 # ------------------------------------------------------------------ conexión
 @app.get("/api/puertos")
 def puertos():
-    import glob
-    ports = sorted(set(glob.glob("/dev/cu.usb*") + glob.glob("/dev/cu.wch*") + glob.glob("/dev/cu.SLAB*")
-                       + glob.glob("/dev/ttyUSB*") + glob.glob("/dev/ttyACM*")))
-    return {"puertos": ports, "sugerido": find_usb_port()}
+    ports = list_usb_ports()
+    return {"puertos": ports, "sugerido": ports[0] if ports else None}
 
 
 @app.post("/api/conectar")

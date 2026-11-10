@@ -17,7 +17,7 @@ gemelo/                  gemelo digital en el PC + barrido de 108 configuracione
 
 1. En VS Code abre **esta carpeta** (`simulacion/`) con *File → Open Folder*.
 2. Abre `diagram.json` y pulsa **▶ Play** en el panel de Wokwi.
-   También funciona `Cmd+Shift+P` → **Wokwi: Start Simulator**.
+   También funciona `Cmd+Shift+P` (`Ctrl+Shift+P` en Windows y Linux) → **Wokwi: Start Simulator**.
 3. En el monitor serie verás el arranque, la calibración del giroscopio y luego las líneas CSV.
    Puedes escribir comandos ahí mismo: `i`, `t`, `p`, etc. (están en el README del firmware).
 
@@ -67,9 +67,19 @@ lectura de FSR) contra los sensores virtuales y corre 108 combinaciones en segun
 
 ```bash
 cd gemelo
-sh build.sh          # requiere el compilador de Xcode (xcode-select --install)
-python3 run_sweep.py # genera resultados/metricas.csv y series_aterrizaje.csv
+python build.py      # compila las 4 variantes en bin/ (macOS, Linux o Windows)
+python run_sweep.py  # genera resultados/metricas.csv y series_aterrizaje.csv
 ```
+
+`build.py` necesita un compilador de C++17 en el PATH:
+
+| Sistema | Compilador |
+|---|---|
+| macOS | `xcode-select --install` |
+| Linux | `sudo apt install g++` (o el `g++` de tu distribución) |
+| Windows | `winget install BrechtSanders.WinLibs.POSIX.UCRT` (g++ de MinGW-w64) y abrir una terminal nueva |
+
+En macOS y Linux también sirve `sh build.sh`.
 
 Los resultados están en el panel interactivo **"Gemelo digital del aterrizaje"**.
 

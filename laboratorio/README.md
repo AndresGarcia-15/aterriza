@@ -6,10 +6,16 @@ digital, configurar Wokwi y analizar o comparar los ensayos.
 
 ## Abrir
 
-- **Doble clic** en `Abrir laboratorio.command`, o en la Terminal: `sh iniciar.sh`
-- Se abre solo en el navegador: <http://127.0.0.1:8050>. Para cerrarlo: `Ctrl+C` en la Terminal.
-- La primera vez descarga las dependencias de Python con `uv` (~1 min) y compila el
-  gemelo digital (~20 s; requiere el compilador de Xcode: `xcode-select --install`).
+| Sistema | Abrir |
+|---|---|
+| macOS | Doble clic en `Abrir laboratorio.command`, o `sh iniciar.sh` |
+| Linux | `sh iniciar.sh` |
+| Windows | Doble clic en `Abrir laboratorio (Windows).cmd`, o `.\iniciar.ps1` en PowerShell |
+
+- Se abre solo en el navegador: <http://127.0.0.1:8050>. Para cerrarlo: `Ctrl+C` en la terminal.
+- La primera vez instala `uv` si falta, descarga las dependencias de Python (~1 min) y compila
+  el gemelo digital (~20 s). Para eso necesita un compilador de C++: ver
+  [simulacion/README.md](../simulacion/README.md#2-gemelo-digital-barrido-rápido-en-el-pc).
 
 ## Pestañas
 

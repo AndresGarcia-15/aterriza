@@ -31,16 +31,20 @@ firmware/
 
 ---
 
-## 1. Qué instalar (en tu Mac)
+## 1. Qué instalar
 
-En la Terminal:
+**Arduino IDE 2** (lo exige la documentación) y, si quieres compilar y subir desde la
+terminal, **arduino-cli**:
+
+| Sistema | Arduino IDE 2 | arduino-cli |
+|---|---|---|
+| macOS | `brew install --cask arduino-ide` | `brew install arduino-cli` |
+| Windows | `winget install ArduinoSA.IDE.stable` | `winget install ArduinoSA.CLI` |
+| Linux | AppImage de [arduino.cc/en/software](https://www.arduino.cc/en/software) | `curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \| sh` |
+
+Luego, en cualquier sistema, el soporte para ESP32 (core oficial de Espressif):
 
 ```bash
-# Arduino IDE 2 (lo exige la documentación) + arduino-cli (para compilar/subir desde terminal)
-brew install --cask arduino-ide
-brew install arduino-cli
-
-# Soporte para ESP32 (core oficial de Espressif)
 arduino-cli config init
 arduino-cli config add board_manager.additional_urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
 arduino-cli core update-index
@@ -53,12 +57,23 @@ Placa: **ESP32 Dev Module**. No se necesita ninguna librería externa: los drive
 están escritos a nivel de registros.
 
 Para el logger en Python no hace falta instalar nada si ya tienes `uv`
-(`uv run --with pyserial …`). Si no, ejecuta `brew install uv`.
+(`uv run --with pyserial …`). Si no: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+en macOS/Linux o `winget install astral-sh.uv` en Windows.
 
-**Driver USB:** conecta el ESP32 y ejecuta `ls /dev/cu.*`. Si aparece
-`/dev/cu.usbserial-…` o `/dev/cu.wchusbserial…`, ya está. Si no aparece nada:
+**Puerto USB:** conecta el ESP32 y búscalo. El nombre cambia según el sistema:
+
+| Sistema | Cómo verlo | Nombre típico |
+|---|---|---|
+| macOS | `ls /dev/cu.*` | `/dev/cu.usbserial-0001` o `/dev/cu.wchusbserial…` |
+| Linux | `ls /dev/ttyUSB* /dev/ttyACM*` | `/dev/ttyUSB0` |
+| Windows | Administrador de dispositivos → *Puertos (COM y LPT)* | `COM3` |
+
+Si no aparece nada:
 1. Prueba **otro cable USB-C**, porque muchos solo cargan y no transmiten datos.
-2. Si sigue sin aparecer, instala el driver del chip impreso junto al conector: CH340/CH9102 (WCH) o CP2102 (Silicon Labs).
+2. Instala el driver del chip impreso junto al conector: CH340/CH9102 (WCH) o CP2102
+   (Silicon Labs). En Windows casi siempre hace falta; en macOS y Linux suele venir incluido.
+3. **Linux:** si aparece pero da «Permission denied», agrega tu usuario al grupo del puerto
+   y cierra sesión: `sudo usermod -aG dialout $USER` (en Arch: `uucp`).
 
 ## 2. Compilar y subir
 
@@ -67,11 +82,12 @@ Abre el *Serial Monitor* a **921600 baudios**.
 
 **Opción terminal:**
 ```bash
-cd ~/"Documents/OTRAS PERSONAS/ARIAN/Proyecto Biomecanica/firmware"
+cd firmware        # dentro del repositorio
 arduino-cli compile --fqbn esp32:esp32:esp32 BiomecanicaESP32
-arduino-cli upload  --fqbn esp32:esp32:esp32 -p /dev/cu.usbserial-XXXX BiomecanicaESP32
-arduino-cli monitor -p /dev/cu.usbserial-XXXX -c baudrate=921600
+arduino-cli upload  --fqbn esp32:esp32:esp32 -p PUERTO BiomecanicaESP32
+arduino-cli monitor -p PUERTO -c baudrate=921600
 ```
+`PUERTO` es el de la tabla anterior (`/dev/cu.usbserial-0001`, `/dev/ttyUSB0` o `COM3`).
 Si aparece "Failed to connect", mantén presionado el botón **BOOT** de la placa al iniciar la carga.
 Al encender, los primeros caracteres salen ilegibles: es el bootloader del ESP32, que
 transmite a 115200 baudios. Es normal.

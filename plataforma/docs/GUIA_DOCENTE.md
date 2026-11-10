@@ -4,8 +4,9 @@
 30-40 cm) con 2 plantillas (4 FSR) y 3 IMU, y devuelve retroalimentación comprensible para el
 deportista, basada en la escala LESS y la literatura citada en `docs/ciencia.md`.
 
-**Cómo abrirla:** doble clic en `plataforma/Abrir Aterriza.command` → se abre el navegador en
-`http://127.0.0.1:8000`.
+**Cómo abrirla:** doble clic en `plataforma/Abrir Aterriza.command` (Mac) o en
+`plataforma/Abrir Aterriza (Windows).cmd` (Windows); en Linux, `sh plataforma/iniciar.sh`. Se abre
+el navegador en `http://127.0.0.1:8000`.
 
 **Flujo (≈ 3 minutos):**
 1. **Atleta** — elegir o crear el perfil (nombre, deporte, pierna dominante, estatura, masa).

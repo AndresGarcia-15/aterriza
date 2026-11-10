@@ -16,3 +16,6 @@ plataforma/backend/data/demo/** linguist-generated=true
 # datos y cabeceras de terceros: se guardan byte a byte
 *.csv -text
 simulacion/chips/src/wokwi-api.h -text
+# scripts de Windows con finales de línea de Windows
+*.ps1 text eol=crlf
+*.cmd text eol=crlf

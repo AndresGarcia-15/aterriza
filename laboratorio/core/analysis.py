@@ -28,7 +28,7 @@ def list_ensayos() -> list[dict]:
             j = csv.with_suffix(".json")
             if j.exists():
                 try:
-                    meta = json.loads(j.read_text())
+                    meta = json.loads(j.read_text(encoding="utf-8"))
                 except json.JSONDecodeError:
                     pass
             items.append({"path": str(csv), "name": csv.stem, "mtime": csv.stat().st_mtime,
@@ -47,7 +47,7 @@ def load(path: str) -> tuple[pd.DataFrame, dict]:
     j = Path(path).with_suffix(".json")
     if j.exists():
         try:
-            meta = json.loads(j.read_text())
+            meta = json.loads(j.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
             pass
     return df, meta

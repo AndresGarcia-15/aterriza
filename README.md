@@ -66,25 +66,23 @@ el índice se calcula solo con lo que sí se midió, sin inventar datos.
 
 ## Empezar
 
-Requisitos (macOS): [Homebrew](https://brew.sh), luego
+Funciona en **macOS, Windows y Linux**. Lo único que hay que instalar a mano es
+**Node.js 20 o superior**; los scripts de inicio instalan `uv` (Python 3.12 y sus
+dependencias) si falta. La demostración no necesita compilador: sus datos vienen en el repo.
 
-```bash
-brew install uv node
-xcode-select --install        # compilador para el gemelo digital (solo la primera vez)
-```
+| | macOS | Windows | Linux |
+|---|---|---|---|
+| 1. Node.js | `brew install node` | `winget install OpenJS.NodeJS.LTS` | [nodejs.org](https://nodejs.org/en/download) o tu gestor de paquetes |
+| 2. Abrir la plataforma | doble clic en `plataforma/Abrir Aterriza.command` o `./plataforma/iniciar.sh` | doble clic en `plataforma\Abrir Aterriza (Windows).cmd` o `.\plataforma\iniciar.ps1` | `./plataforma/iniciar.sh` |
+| Puerto del ESP32 | `/dev/cu.usbserial-…` | `COM3` (driver CP210x o CH340) | `/dev/ttyUSB0` (usuario en el grupo `dialout`) |
+| Compilador de C++ *(solo laboratorio y gemelo)* | `xcode-select --install` | `winget install BrechtSanders.WinLibs.POSIX.UCRT` | `sudo apt install g++` |
 
-Abrir la plataforma:
+Se abre <http://127.0.0.1:8000>. Sin hardware se puede usar la **Demostración** (el firmware
+real ejecutándose en el gemelo digital) o el **Banco virtual** (sensores simulados que se manejan
+con el mouse y el teclado). El ESP32 por USB se detecta solo en los tres sistemas.
 
-```bash
-cd plataforma
-./iniciar.sh                  # instala, compila si hace falta y abre http://127.0.0.1:8000
-```
-
-o doble clic en `plataforma/Abrir Aterriza.command`. Sin hardware se puede usar la
-**Demostración** (el firmware real ejecutándose en el gemelo digital) o el **Banco virtual**
-(sensores simulados que se manejan con el mouse y el teclado).
-
-Subir el firmware al ESP32: ver [firmware/README.md](firmware/README.md#2-compilar-y-subir).
+Subir el firmware al ESP32 (Arduino IDE 2 en cualquier sistema): ver
+[firmware/README.md](firmware/README.md#1-qué-instalar).
 
 ## Funciones principales
 
@@ -107,12 +105,13 @@ Subir el firmware al ESP32: ver [firmware/README.md](firmware/README.md#2-compil
 ## Pruebas
 
 ```bash
-cd plataforma/backend  && uv run --group dev pytest -q     # motor de reglas, API, banco
+cd plataforma/backend  && uv run --group dev pytest -q     # motor de reglas, API, banco, puertos
 cd plataforma/frontend && npm ci && npm run lint && npm test && npm run build
-sh simulacion/gemelo/build.sh                              # el firmware compila en el gemelo
+python simulacion/gemelo/build.py                          # el firmware compila en el gemelo
 ```
 
-Las tres se ejecutan en cada push con GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+En cada push, GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) las corre
+en **Ubuntu, macOS y Windows**, y revisa la sintaxis de los scripts de inicio de Windows.
 
 ## Datos y privacidad
 

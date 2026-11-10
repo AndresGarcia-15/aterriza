@@ -8,7 +8,7 @@ Un solo lugar para:
   · ejecutar experimentos del gemelo digital y configurar Wokwi
   · analizar y comparar los ensayos grabados (se actualiza solo)
 
-Ejecutar:  sh iniciar.sh   (o doble clic en "Abrir laboratorio.command")
+Ejecutar:  sh iniciar.sh (macOS/Linux) · .\\iniciar.ps1 (Windows) · o doble clic en «Abrir laboratorio…»
 """
 from __future__ import annotations
 

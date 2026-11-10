@@ -70,14 +70,26 @@ JOBS = Jobs()
 
 def _env():
     env = dict(os.environ)
-    extra = ["/opt/homebrew/bin", "/usr/local/bin", str(Path.home() / ".local/bin")]
-    env["PATH"] = ":".join(extra + [env.get("PATH", "")])
+    extra = [] if os.name == "nt" else ["/opt/homebrew/bin", "/usr/local/bin"]
+    extra.append(str(Path.home() / ".local" / "bin"))
+    env["PATH"] = os.pathsep.join(extra + [env.get("PATH", "")])
     return env
+
+
+def _instalar(que: str) -> str:
+    """Cómo instalar una herramienta en este sistema operativo."""
+    pistas = {
+        "c++": {"darwin": "xcode-select --install", "linux": "sudo apt install g++",
+                "win32": "winget install BrechtSanders.WinLibs.POSIX.UCRT"},
+        "arduino-cli": {"darwin": "brew install arduino-cli", "linux": "ver arduino.github.io/arduino-cli/latest/installation",
+                        "win32": "winget install ArduinoSA.CLI"},
+    }[que]
+    return pistas.get(sys.platform, pistas["linux"])
 
 
 def _run(cmd, log, cwd=None):
     log("$ " + " ".join(str(c) for c in cmd))
-    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=_env())
+    p = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace", env=_env())
     out = []
     for line in p.stdout:
         line = line.rstrip()
@@ -91,7 +103,7 @@ def _run(cmd, log, cwd=None):
 
 # --------------------------------------------------------- gemelo digital
 def gemelo_binary(rate: int, ma: int) -> Path:
-    return paths.GEMELO / "bin" / f"sim_{rate}_ma{ma}"
+    return paths.GEMELO / "bin" / f"sim_{rate}_ma{ma}{'.exe' if os.name == 'nt' else ''}"
 
 
 def gemelo_ready() -> bool:
@@ -99,9 +111,9 @@ def gemelo_ready() -> bool:
 
 
 def build_gemelo(log=print):
-    if not (shutil.which("c++", path=_env()["PATH"]) or shutil.which("clang++", path=_env()["PATH"])):
-        raise RuntimeError("Falta el compilador C++. En la Terminal: xcode-select --install")
-    _run(["sh", "build.sh"], log, cwd=paths.GEMELO)
+    if not any(shutil.which(c, path=_env()["PATH"]) for c in ("c++", "g++", "clang++")):
+        raise RuntimeError(f"Falta el compilador de C++. Instálalo con: {_instalar('c++')}")
+    _run([sys.executable, "build.py"], log, cwd=paths.GEMELO)
     return True
 
 
@@ -142,7 +154,7 @@ DIAGRAM = paths.SIM / "diagram.json"
 
 
 def wokwi_config() -> dict:
-    d = json.loads(DIAGRAM.read_text())
+    d = json.loads(DIAGRAM.read_text(encoding="utf-8"))
     cfg = {"escenario": 0, "r": 10000.0, "transfer": 0.10}
     for p in d["parts"]:
         if p["type"] == "chip-fsr":
@@ -153,20 +165,22 @@ def wokwi_config() -> dict:
 
 
 def set_wokwi_config(escenario: int, r: float, transfer: float):
-    d = json.loads(DIAGRAM.read_text())
+    d = json.loads(DIAGRAM.read_text(encoding="utf-8"))
     for p in d["parts"]:
         if p["type"] in ("chip-gy85", "chip-fsr"):
             p.setdefault("attrs", {})["scenario"] = str(int(escenario))
         if p["type"] == "chip-fsr":
             p["attrs"]["r_divider"] = str(int(r))
             p["attrs"]["transfer"] = f"{transfer:.2f}"
-    DIAGRAM.write_text(json.dumps(d, indent=2))
+    DIAGRAM.write_text(json.dumps(d, indent=2), encoding="utf-8")
 
 
 def build_firmware_wokwi(log):
     if not shutil.which("arduino-cli", path=_env()["PATH"]):
-        raise RuntimeError("No se encontró arduino-cli (brew install arduino-cli)")
-    _run(["sh", "build_firmware.sh"], log, cwd=paths.SIM)
+        raise RuntimeError(f"No se encontró arduino-cli. Instálalo con: {_instalar('arduino-cli')}")
+    _run(["arduino-cli", "compile", "--fqbn", "esp32:esp32:esp32",
+          "--build-property", "compiler.cpp.extra_flags=-DCFG_AUTO_STATS_S=3",
+          "--output-dir", "build", str(paths.FIRMWARE / "BiomecanicaESP32")], log, cwd=paths.SIM)
     return True
 
 

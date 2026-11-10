@@ -8,4 +8,4 @@ if str(LAB) not in sys.path:
     sys.path.insert(0, str(LAB))
 
 from core import analysis, link, paths  # noqa: E402,F401
-from core.link import Link, SerialSource, find_usb_port, FLAG_NAMES  # noqa: E402,F401
+from core.link import Link, SerialSource, find_usb_port, list_usb_ports, FLAG_NAMES  # noqa: E402,F401

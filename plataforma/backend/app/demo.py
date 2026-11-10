@@ -9,7 +9,9 @@ Divisor de los FSR: 1 kΩ (recomendado por el gemelo: sin saturación).
 """
 from __future__ import annotations
 
+import os
 import subprocess
+import sys
 import threading
 import time
 from collections import deque
@@ -32,15 +34,15 @@ def ensure_data() -> None:
         out = DATA / f"esc{s}.csv"
         if out.exists():
             continue
-        binary = GEMELO / "bin" / "sim_100_ma3"
+        binary = GEMELO / "bin" / f"sim_100_ma3{'.exe' if os.name == 'nt' else ''}"
         if not binary.exists():
-            subprocess.run(["sh", "build.sh"], cwd=GEMELO, check=True, capture_output=True)
-        subprocess.run([str(binary), str(s), str(R_DIV), str(TRANSFER), "/dev/null", str(out), str(DUR)],
+            subprocess.run([sys.executable, "build.py"], cwd=GEMELO, check=True, capture_output=True)
+        subprocess.run([str(binary), str(s), str(R_DIV), str(TRANSFER), os.devnull, str(out), str(DUR)],
                        check=True, capture_output=True)
 
 
 def _load(s: int):
-    lines = (DATA / f"esc{s}.csv").read_text().splitlines()
+    lines = (DATA / f"esc{s}.csv").read_text(encoding="utf-8").splitlines()
     header = lines[0]
     rows = []
     for ln in lines[1:]:

@@ -36,10 +36,14 @@ FLAG_NAMES = {
 
 
 def find_port():
-    patterns = ["/dev/cu.usbserial*", "/dev/cu.wchusbserial*", "/dev/cu.SLAB_USBtoUART*",
-                "/dev/cu.usbmodem*", "/dev/ttyUSB*", "/dev/ttyACM*"]
-    for p in patterns:
-        found = sorted(glob.glob(p))
+    """Puerto del ESP32 en macOS (/dev/cu.usbserial-…), Linux (/dev/ttyUSB0) o Windows (COM3)."""
+    vids = {0x10C4, 0x1A86, 0x0403, 0x303A}  # CP210x, CH340/CH9102, FTDI, USB nativo Espressif
+    ports = [p for p in list_ports.comports() if not p.device.startswith("/dev/tty.")]
+    for p in sorted(ports, key=lambda p: (p.vid not in vids, p.device)):
+        if p.vid is not None:
+            return p.device
+    for pat in ("/dev/cu.usbserial*", "/dev/cu.wchusbserial*", "/dev/ttyUSB*", "/dev/ttyACM*"):
+        found = sorted(glob.glob(pat))
         if found:
             return found[0]
     return None
@@ -99,7 +103,7 @@ def main():
     t_report, rows_at_report = t_start, 0
 
     print(f"Registrando en {csv_path}  (Ctrl+C para terminar)")
-    with open(csv_path, "w", newline="") as f:
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
         try:
             while True:
                 if args.duracion and time.time() - t_start >= args.duracion:
@@ -172,7 +176,7 @@ def main():
         "paquetes_perdidos": gaps, "lineas_invalidas": bad,
         "conteo_flags": {FLAG_NAMES[k]: v for k, v in flag_counts.items() if v},
     })
-    meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False))
+    meta_path.write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\n\nListo: {rows} muestras, {gaps} perdidas, {bad} líneas inválidas.")
     print(f"  datos:     {csv_path}\n  metadatos: {meta_path}")
     if columns is None:

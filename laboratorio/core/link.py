@@ -24,13 +24,40 @@ FLAG_NAMES = {0: "sat_P1_H", 1: "sat_P1_F", 2: "sat_P2_H", 3: "sat_P2_F", 4: "er
 ESCENARIOS = {0: "Controlado", 1: "Rígido", 2: "Asimétrico + valgo"}
 
 
+# Adaptadores USB-serie de las placas ESP32 (VID USB): Silicon Labs CP210x, WCH CH340/CH9102,
+# FTDI y el USB nativo de Espressif. Sirve igual en macOS, Linux y Windows.
+USB_VIDS = {0x10C4, 0x1A86, 0x0403, 0x303A}
+# Nombres típicos si el sistema no informa el VID
+_USB_HINT = ("usbserial", "wchusbserial", "SLAB_USBtoUART", "usbmodem", "ttyUSB", "ttyACM")
+
+
+def list_usb_ports() -> list[str]:
+    """Puertos serie donde puede estar el ESP32, el más probable primero.
+    macOS: /dev/cu.usbserial-…  ·  Linux: /dev/ttyUSB0  ·  Windows: COM3."""
+    try:
+        from serial.tools import list_ports
+        infos = list(list_ports.comports())
+    except Exception:  # pyserial sin list_ports: se busca por nombre
+        infos = []
+    found: list[tuple[int, str]] = []
+    for p in infos:
+        dev = p.device
+        if dev.startswith("/dev/tty.") and dev.replace("/dev/tty.", "/dev/cu.") in {i.device for i in infos}:
+            continue  # en macOS se usa la variante /dev/cu.* (no espera la señal DCD)
+        if p.vid in USB_VIDS:
+            found.append((0, dev))
+        elif p.vid is not None or any(h in dev for h in _USB_HINT):
+            found.append((1, dev))
+    if not infos:
+        for pat in ("/dev/cu.usbserial*", "/dev/cu.wchusbserial*", "/dev/cu.SLAB_USBtoUART*",
+                    "/dev/cu.usbmodem*", "/dev/ttyUSB*", "/dev/ttyACM*"):
+            found += [(1, d) for d in sorted(glob.glob(pat))]
+    return [d for _, d in sorted(set(found))]
+
+
 def find_usb_port() -> str | None:
-    for pat in ("/dev/cu.usbserial*", "/dev/cu.wchusbserial*", "/dev/cu.SLAB_USBtoUART*",
-                "/dev/cu.usbmodem*", "/dev/ttyUSB*", "/dev/ttyACM*"):
-        found = sorted(glob.glob(pat))
-        if found:
-            return found[0]
-    return None
+    ports = list_usb_ports()
+    return ports[0] if ports else None
 
 
 # ----------------------------------------------------------------- fuentes
@@ -74,7 +101,7 @@ class ReplaySource:
             subprocess.run([str(gemelo_binary(rate, ma)), str(escenario), str(r_div), str(transfer),
                             str(paths.CACHE / "_cmp.csv"), str(out), str(self.LOOP_END + 0.5)],
                            check=True, capture_output=True)
-        lines = out.read_text().splitlines()
+        lines = out.read_text(encoding="utf-8").splitlines()
         self.header = lines[0]
         self.rows = []
         for ln in lines[1:]:
@@ -363,7 +390,7 @@ class Link:
             stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             safe = lambda s: "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in (s or "x"))
             self.rec_path = paths.ENSAYOS / f"{safe(participante)}_{safe(ensayo)}_{stamp}.csv"
-            self.rec_file = open(self.rec_path, "w", newline="", buffering=1)  # por línea: legible mientras graba
+            self.rec_file = open(self.rec_path, "w", newline="", buffering=1, encoding="utf-8")  # por línea: legible mientras graba
             if self.columns:
                 self.rec_file.write(",".join(self.columns) + "\n")
             self.rec_meta = {"participante": participante, "ensayo": ensayo,
@@ -389,7 +416,7 @@ class Link:
                 "frecuencia_media_hz": round((self.rec_rows - 1) / dur, 2) if dur > 0 and self.rec_rows > 1 else 0,
                 "paquetes_perdidos": self.rec_gaps,
                 "conteo_flags": {FLAG_NAMES[k]: v for k, v in self.rec_flags.items() if v}})
-            self.rec_path.with_suffix(".json").write_text(json.dumps(self.rec_meta, indent=2, ensure_ascii=False))
+            self.rec_path.with_suffix(".json").write_text(json.dumps(self.rec_meta, indent=2, ensure_ascii=False), encoding="utf-8")
             self.messages.append(f"#LAB ensayo guardado: {self.rec_path.name} ({self.rec_rows} muestras)")
             return self.rec_path
 

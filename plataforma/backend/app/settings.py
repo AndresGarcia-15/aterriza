@@ -21,7 +21,7 @@ def get() -> dict:
         data = dict(DEFAULT)
         if PATH.exists():
             try:
-                data.update(json.loads(PATH.read_text()))
+                data.update(json.loads(PATH.read_text(encoding="utf-8")))
             except json.JSONDecodeError:
                 pass
         _cache = data
@@ -35,6 +35,6 @@ def update(changes: dict) -> dict:
         if k in DEFAULT and v is not None:
             data[k] = type(DEFAULT[k])(v)
     PATH.parent.mkdir(exist_ok=True)
-    PATH.write_text(json.dumps(data, indent=2))
+    PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
     _cache = data
     return data

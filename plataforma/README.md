@@ -12,25 +12,36 @@ en el **Modo profesional**, protegido con PIN).
                                               └ SQLite local (atletas, sesiones, saltos)
 ```
 
-## Instalación en Mac (una vez)
-1. Homebrew → `brew install uv node`
-2. Para el modo demo con el gemelo digital ya compilado no hace falta nada más
-   (si falta `simulacion/gemelo/bin`, se compila solo con `xcode-select --install`).
+## Instalación (una vez)
+
+Solo hace falta **Node.js 20 o superior**. `uv` (Python 3.12 y dependencias) lo instalan solos
+los scripts de inicio si no está. La demostración no necesita compilador: sus datos ya vienen
+en `backend/data/demo/`.
+
+| Sistema | Node.js |
+|---|---|
+| macOS | `brew install node` (o el instalador de [nodejs.org](https://nodejs.org)) |
+| Windows | `winget install OpenJS.NodeJS.LTS` |
+| Linux | [nodejs.org](https://nodejs.org/en/download) o el gestor de paquetes de tu distribución |
 
 ## Uso
-```bash
-cd plataforma
-./iniciar.sh          # compila si hace falta y abre http://127.0.0.1:8000
-./iniciar.sh red      # accesible desde otros equipos (Tailscale)
-./iniciar.sh dev      # desarrollo: Vite con recarga en caliente (:5173) + API (:8000)
-```
-También se puede abrir con doble clic en **Abrir Aterriza.command**.
+
+| | macOS / Linux | Windows (PowerShell) |
+|---|---|---|
+| Abrir | `./iniciar.sh` | `.\iniciar.ps1` |
+| Accesible desde otros equipos (Tailscale / LAN) | `./iniciar.sh red` | `.\iniciar.ps1 red` |
+| Desarrollo con recarga en caliente (:5173 + API :8000) | `./iniciar.sh dev` | `.\iniciar.ps1 dev` |
+| Doble clic | `Abrir Aterriza.command` (Mac) | `Abrir Aterriza (Windows).cmd` |
+
+Todos compilan la interfaz si hace falta y abren <http://127.0.0.1:8000>.
 
 ### Fuentes de datos
 - **Demostración:** el firmware real ejecutado en el gemelo digital (3 escenarios:
   controlado, rígido, asimétrico con valgo). En *Evaluación* aparecen los botones para soltar
   cada escenario y un modo *Auto*.
-- **ESP32 por USB:** se detecta el puerto `/dev/cu.usbserial*` (921 600 baudios). El firmware
+- **ESP32 por USB:** el puerto se detecta solo en los tres sistemas (`/dev/cu.usbserial-…` en
+  macOS, `/dev/ttyUSB0` en Linux, `COM3` en Windows), a 921 600 baudios. Drivers y permisos:
+  [firmware/README.md](../firmware/README.md#1-qué-instalar). El firmware
   **no** se modifica: mismo CSV de 36 columnas y mismos comandos (`t i g a m s x`).
 - **Wokwi:** `rfc2217://localhost:4000` con la simulación corriendo en VS Code.
 
@@ -68,8 +79,8 @@ banco virtual, y no se mezcla con los atletas (sus saltos se guardan con el atle
   unidades, conexión y lectura actual).
 
 ### Verlo a distancia con Tailscale
-1. Instala Tailscale en el Mac del laboratorio y en el equipo remoto, con la misma cuenta.
-2. En el Mac: `./iniciar.sh red` → muestra `http://100.x.y.z:8000`.
+1. Instala Tailscale en el equipo del laboratorio y en el remoto, con la misma cuenta.
+2. En el equipo del laboratorio: `./iniciar.sh red` (o `.\iniciar.ps1 red`) → muestra `http://100.x.y.z:8000`.
 3. Ábrelo en el otro equipo. Todo viaja por WebSocket (sin polling): la latencia típica dentro
    de la tailnet es < 100 ms, por debajo del criterio de 300 ms.
 
